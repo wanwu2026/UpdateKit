@@ -1,0 +1,105 @@
+name: Build Demo APK
+
+# 在 GitHub 托管 runner（x86_64，自带 Android SDK）真编译示例 APK 并发布。
+# 本机 aarch64 无 Android SDK，编译交给云端；私钥/SDK 都不进仓库。
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Python cross-check tests
+        run: python3 tools/test_tool.py
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Android SDK components
+        run: |
+          SDKROOT="${ANDROID_HOME:-/usr/local/lib/android/sdk}"
+          SDKMGR=$(find "$SDKROOT/cmdline-tools" -name sdkmanager -type f 2>/dev/null | head -n 1)
+          if [ -z "$SDKMGR" ]; then echo "sdkmanager not found (SDKROOT=$SDKROOT)" >&2; exit 1; fi
+          yes | "$SDKMGR" --licenses > /dev/null 2>&1 || true
+          "$SDKMGR" --install "platforms;android-34" "build-tools;34.0.0" > /dev/null
+          echo "Android SDK ready (platform 34 / build-tools 34.0.0)"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Generate temporary signing key (CI only)
+        run: |
+          keytool -genkeypair -v \
+            -keystore "$RUNNER_TEMP/updatekit-demo.jks" \
+            -storepass updatekitdemo -keypass updatekitdemo \
+            -alias demo -keyalg RSA -keysize 2048 -validity 10000 \
+            -dname "CN=UpdateKit Demo, OU=Open Source, O=UpdateKit, L=Unknown, ST=Unknown, C=CN" >/dev/null 2>&1
+          echo "UPDATEKIT_KEYSTORE=$RUNNER_TEMP/updatekit-demo.jks" >> "$GITHUB_ENV"
+          echo "UPDATEKIT_STOREPASS=updatekitdemo" >> "$GITHUB_ENV"
+          echo "UPDATEKIT_KEYPASS=updatekitdemo" >> "$GITHUB_ENV"
+          echo "UPDATEKIT_KEYALIAS=demo" >> "$GITHUB_ENV"
+
+      - name: Run Java unit tests
+        run: gradle :sdk:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Build release APK
+        run: gradle :demo:assembleRelease --no-daemon --stacktrace
+
+      - name: Normalize APK filename
+        run: |
+          APK=$(find demo/build/outputs/apk/release -name '*.apk' | head -n 1)
+          if [ -z "$APK" ]; then echo "APK not found" >&2; exit 1; fi
+          cp "$APK" "$GITHUB_WORKSPACE/UpdateKitDemo-release.apk"
+          echo "APK: $APK"
+          du -h "$GITHUB_WORKSPACE/UpdateKitDemo-release.apk"
+          unzip -p "$GITHUB_WORKSPACE/UpdateKitDemo-release.apk" AndroidManifest.xml >/dev/null 2>&1 \
+            && echo "APK structure: OK"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UpdateKitDemo-apk
+          path: UpdateKitDemo-release.apk
+          if-no-files-found: error
+
+      - name: Resolve release tag
+        id: version
+        run: |
+          REF=${GITHUB_REF#refs/tags/}
+          if [ "$REF" != "$GITHUB_REF" ]; then
+            echo "TAG=$REF" >> "$GITHUB_ENV"
+            echo "RELEASE_NAME=$REF" >> "$GITHUB_ENV"
+          else
+            echo "TAG=demo-latest" >> "$GITHUB_ENV"
+            echo "RELEASE_NAME=UpdateKit Demo APK (latest)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          body: |
+            Demo app built by GitHub Actions, signed with a temporary key (regenerated each build).
+            Update/announcement signing is verified against the embedded demo public key.
+
+            > Demo build only — the signing key is regenerated every build and discarded with the runner.
+            > For production, embed your own public key; the private key must stay on your server (OpenHub).
+          files: UpdateKitDemo-release.apk
+          generate_release_notes: ${{ github.ref_type == 'tag' }}
+          preserve_existing_tag: true

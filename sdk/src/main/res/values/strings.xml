@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="updatekit_update_title">发现新版本</string>
+    <string name="updatekit_notice_title">公告</string>
+</resources>

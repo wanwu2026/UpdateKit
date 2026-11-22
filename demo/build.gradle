@@ -1,0 +1,48 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.updatekitdemo'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.updatekitdemo"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    signingConfigs {
+        ci {
+            // CI 用临时密钥出包；本地未设置这些环境变量时跳过，debug 正常
+            def ks = System.getenv("UPDATEKIT_KEYSTORE")
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv("UPDATEKIT_STOREPASS")
+                keyAlias System.getenv("UPDATEKIT_KEYALIAS")
+                keyPassword System.getenv("UPDATEKIT_KEYPASS")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (System.getenv("UPDATEKIT_KEYSTORE")) {
+                signingConfig signingConfigs.ci
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation project(':sdk')
+}

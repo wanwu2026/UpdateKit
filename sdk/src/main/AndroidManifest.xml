@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- SDK 不声明权限；INTERNET 由宿主 app 按需声明 -->
+</manifest>
