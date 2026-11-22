@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import com.example.updatekit.core.ApiClient;
 import com.example.updatekit.core.SignatureVerifier;

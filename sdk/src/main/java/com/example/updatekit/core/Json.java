@@ -3,6 +3,7 @@ package com.example.updatekit.core;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 /** JSONObject → Map 转换（保留 org.json 的数值/布尔类型，供 CanonicalJson 重建字节）。 */
@@ -11,7 +12,9 @@ public final class Json {
 
     public static Map<String, Object> toMap(JSONObject o) {
         Map<String, Object> m = new HashMap<>();
-        for (String k : o.keySet()) {
+        Iterator<String> it = o.keys();
+        while (it.hasNext()) {
+            String k = it.next();
             Object v = o.get(k);
             m.put(k, v == JSONObject.NULL ? null : v);
         }
