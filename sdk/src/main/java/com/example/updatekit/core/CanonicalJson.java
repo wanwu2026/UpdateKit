@@ -10,7 +10,7 @@ import java.util.Map;
  *   json.dumps(obj, sort_keys=True, separators=(",", ":"))   # ensure_ascii 默认 True
  *
  * 服务端（OpenHub）用它对清单/公告签名，客户端必须用完全相同的字节重建才能验签通过。
- * 三个要点：① key 按字典序排 ② 无空格分隔 ③ 非 ASCII 转义成小写 \uXXXX（含代理对）。
+ * 三个要点：① key 按字典序排 ② 无空格分隔 ③ 非 ASCII 转成小写 unicode 转义序列（含代理对）。
  *
  * 只支持签名体里出现的标量类型：String / Number(Integer、Long) / Boolean / null。
  */
