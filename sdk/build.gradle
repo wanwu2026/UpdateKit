@@ -28,6 +28,13 @@ android {
     testOptions {
         unitTests.returnDefaultValues = true
     }
+
+    // AGP 8.x：发布前需声明要发布的 variant，否则 components.release 不存在
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
