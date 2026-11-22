@@ -33,6 +33,7 @@ public final class UpdateVerifier {
     /** 下载后的第二道校验：APK 签名证书指纹与清单一致（大小写不敏感）。 */
     public static boolean fingerprintMatches(String actualFingerprint, String expected) {
         if (actualFingerprint == null || expected == null) return false;
-        return actualFingerprint.equalsIgnoreCase(expected.replace(":", ""));
+        // 两边都去冒号：有的工具把证书指纹显示成 aa:bb:cc 形式，签名体里是无分隔 hex
+        return actualFingerprint.replace(":", "").equalsIgnoreCase(expected.replace(":", ""));
     }
 }

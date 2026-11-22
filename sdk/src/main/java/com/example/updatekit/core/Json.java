@@ -15,7 +15,7 @@ public final class Json {
         Iterator<String> it = o.keys();
         while (it.hasNext()) {
             String k = it.next();
-            Object v = o.get(k);
+            Object v = o.opt(k); // opt 不抛 checked JSONException；k 来自 keys() 必然存在，语义等价
             m.put(k, v == JSONObject.NULL ? null : v);
         }
         return m;
