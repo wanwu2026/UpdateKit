@@ -34,3 +34,18 @@ dependencies {
     // org.json 由 Android 系统提供（android.jar），无需额外依赖
     testImplementation 'junit:junit:4.13.2'
 }
+
+// JitPack：把 :sdk 作为独立 AAR 发布，坐标 com.github.wanwu2026.<Repo>:sdk:<tag>
+apply plugin: 'maven-publish'
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.github.wanwu2026'
+                artifactId = "$d"
+                version = '1.0'
+            }
+        }
+    }
+}

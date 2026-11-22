@@ -42,7 +42,20 @@ Releases 里的 `UpdateKitDemo-release.apk`（GitHub Actions 用临时密钥编�
 
 ### 接入你的 App（3 步）
 
-**1. 依赖**：把 `sdk` 模块作为 library 引入（`implementation project(':sdk')`），或打包成 AAR。
+**1. 依赖**：
+
+本地源码集成：`implementation project(':sdk')`。
+
+远程依赖（JitPack，仓库打 tag 后可用）：
+
+```gradle
+// settings.gradle 的 repositories 加：maven { url 'https://jitpack.io' }
+dependencies {
+    implementation 'com.github.wanwu2026:UpdateKit:TAG'   // TAG = 仓库 tag，如 1.0
+}
+```
+
+JitPack 首次构建需在 https://jitpack.io 用 GitHub 账号登录并触发（打 tag 后 JitPack 会自动发现）。
 
 **2. 初始化**（`Application.onCreate`）：
 
