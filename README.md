@@ -15,10 +15,6 @@
 
 ---
 
-## 它解决什么
-
-前两个项目：**CardKeySDK**（卡密激活）+ **OpenHub**（通用后端）。OpenHub 的 `update` / `crash` 插件只有服务端，缺客户端。UpdateKit 补上这块：让 App 能安全地查更新、拉公告，和 CardKey 一起构成"客户端 SDK 家族"。
-
 ```
 App 启动
  → UpdateKit 带 API Key 请求 OpenHub /update/check 和 /announce/list

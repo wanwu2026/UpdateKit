@@ -15,10 +15,6 @@ A **client-side** Android SDK to safely check for app updates and fetch announce
 
 ---
 
-## What it solves
-
-The first two projects: **CardKeySDK** (license activation) + **OpenHub** (generic backend). OpenHub's `update` / `crash` plugins were server-only. UpdateKit fills the client gap so apps can safely check updates and fetch announcements.
-
 ```
 App start
  → UpdateKit fetches /update/check and /announce/list with API Key
